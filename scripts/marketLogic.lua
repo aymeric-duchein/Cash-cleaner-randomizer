@@ -175,7 +175,7 @@ function MarketLogic:SpyMarketOrder()
 end
 
 function MarketLogic:SetMarketPriceFree()
-    self:LoopProducts(function(product)
+    self:LoopProducts(function(product) 
         product.Price = 0  
     end)
 end
