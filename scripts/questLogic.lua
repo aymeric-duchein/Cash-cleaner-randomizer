@@ -471,30 +471,30 @@ end
 function QuestLogic:AwardBonus(Bonus, ValidationRules)
     if self.AvailableQuestBonuses[Bonus].All then
         self.AvailableQuestBonuses[Bonus].All = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus)
+        self.Reward:Check("Quest_Bonus_" .. Bonus)
     end
 
     if Bonus == "No marked money" and ValidationRules["no-mark"] and self.AvailableQuestBonuses[Bonus]["no-mark"] then
         self.AvailableQuestBonuses[Bonus]["no-mark"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
+        self.Reward:Check("Quest_Bonus_" .. Bonus .. "_with_quest")
 
     end
 
     if Bonus == "No fake money" and ValidationRules["no-fake"] and self.AvailableQuestBonuses[Bonus]["no-fake"] then
         self.AvailableQuestBonuses[Bonus]["no-fake"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
+        self.Reward:Check("Quest_Bonus_" .. Bonus .. "_with_quest")
 
     end
 
     if Bonus == "Perfect packs" and ValidationRules["packs"] and self.AvailableQuestBonuses[Bonus]["packs"] then
         self.AvailableQuestBonuses[Bonus]["packs"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
+        self.Reward:Check("Quest_Bonus_" .. Bonus .. "_with_quest")
 
     end
 
     if Bonus == "Perfect blocks" and ValidationRules["blocks"] and self.AvailableQuestBonuses[Bonus]["blocks"] then
         self.AvailableQuestBonuses[Bonus]["blocks"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
+        self.Reward:Check("Quest_Bonus_" .. Bonus .. "_with_quest")
     end
 end
 
@@ -530,7 +530,7 @@ function QuestLogic:OnQuestFinish()
             local mainQuestName = self:GetMainQuestName(questInstance)
             if not self.CompletedMainQuestsNames[mainQuestName] then
                 self.CompletedMainQuestsNames[mainQuestName] = true
-                self.Reward:Award("MainQuest_" .. mainQuestName)
+                self.Reward:Check("MainQuest_" .. mainQuestName)
             end
         end
 
@@ -538,7 +538,7 @@ function QuestLogic:OnQuestFinish()
             if not self.CompletedSideQuestsIds[Utils.GuidToString(questInstance.QuestId)] then
                 self.CompletedSideQuestsIds[Utils.GuidToString(questInstance.QuestId)] = true
                 if self.CompletedSideQuests < self.MaxCompletedSideQuests then
-                    self.Reward:Award("SideQuest_" .. self.CompletedSideQuests)
+                    self.Reward:Check("SideQuest_" .. self.CompletedSideQuests)
                 end
                 self:SetCompletedSideQuest(self.CompletedSideQuests + 1)
             end
@@ -547,7 +547,7 @@ function QuestLogic:OnQuestFinish()
             if difficulty > self.MaxDifficulty then
                 while self.MaxDifficulty < difficulty do
                     self.MaxDifficulty = self.MaxDifficulty + 1
-                    self.Reward:Award("Difficulty_" .. self.MaxDifficulty)
+                    self.Reward:Check("Difficulty_" .. self.MaxDifficulty)
                 end
             end
 
