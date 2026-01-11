@@ -5,7 +5,6 @@ local MarketLogic = require "marketLogic"
 local WorldInteraction = require "worldInteraction"
 local Reward = require "reward"
 local Save = require "save"
-
 local mainGameMode = "/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C"
 
 ExecuteInGameThread(function()
@@ -46,7 +45,8 @@ ExecuteInGameThread(function()
             Reward = Reward
         })
         StackSize:Init({
-            Save = Save
+            Save = Save,
+            MarketLogic = MarketLogic
         })
         Save:LoadSave()
 
@@ -57,8 +57,7 @@ ExecuteInGameThread(function()
 
         Utils.OnWakeUp(function()
             WorldInteraction:AlterInitConsumables()
-        end)
-
+        end)        
     end)
 
     

@@ -121,7 +121,7 @@ function MarketLogic:SetMarketSeed(seed)
     self.PriceSeed = seed
 end
 
-local function LoopProducts(Callback)
+function MarketLogic:LoopProducts(Callback)
     local firstMarketSubsytem = FindFirstOf("BP_MarketSubsystem_C")
     if firstMarketSubsytem ~= nil and firstMarketSubsytem:IsValid() then
         local products = firstMarketSubsytem.MarketData.Products
@@ -138,7 +138,7 @@ local function LoopProducts(Callback)
 end
 function MarketLogic:Upgrade(Target)
     self.Upgrades[Target] = self.Upgrades[Target] + 1
-    LoopProducts(function(product)
+    self:LoopProducts(function(product)
         self:SetItemReputationReq(product, Target)
     end)
    
@@ -146,7 +146,7 @@ end
 
 function MarketLogic:InitLimitation()
     math.randomseed(self.PriceSeed)
-    LoopProducts(function(product)
+    self:LoopProducts(function(product)
         product.Price = math.ceil(product.Price * math.random(4, 25) / 10)
         for k, v in pairs(self.Upgrades) do
             self:SetItemReputationReq(product, k)
@@ -174,7 +174,7 @@ function MarketLogic:SpyMarketOrder()
 end
 
 function MarketLogic:SetMarketPriceFree()
-    LoopProducts(function(product)
+    self:LoopProducts(function(product)
         product.Price = 0  
     end)
 end
