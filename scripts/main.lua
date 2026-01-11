@@ -57,7 +57,11 @@ ExecuteInGameThread(function()
 
         Utils.OnWakeUp(function()
             WorldInteraction:AlterInitConsumables()
-        end)        
+        end)
+
+        RegisterKeyBind(Key.K, function()
+            QuestLogic:SkipCurrentQuest()
+        end)
     end)
 
     
