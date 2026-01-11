@@ -57,7 +57,7 @@ ExecuteInGameThread(function()
 
         Utils.OnWakeUp(function()
             WorldInteraction:AlterInitConsumables()
-        end)        
+        end)
     end)
 
     

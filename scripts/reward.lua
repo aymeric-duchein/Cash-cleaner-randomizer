@@ -103,8 +103,8 @@ end
 
 function Reward:GetLocationText(location)
     if location:find("^Main") then
-        local number = location:match("^MainQuest_(%d+)$")
-        return "Completing main quest " .. number
+        local name = location:match("^MainQuest_(.+)$")
+        return "Completing main quest " .. name
     elseif location:find("^SideQuest") then
         local number = location:match("^SideQuest_(%d+)$")
         return "Completing side quest " .. number

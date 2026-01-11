@@ -86,18 +86,17 @@ QuestLogic.AvailableQuestBonuses = AvailableQuestBonuses
 
 -- 23 main quest location before pig available
 -- 11 optional main location after pig
--- 14 main quest after pig
+-- 16 main quest after pig
 -- 2 high rep quest (16/24)
--- total 50 main quests
+-- total 52 main quests
 
 -- max 30 side locations 
 QuestLogic.CompletedSideQuests = 0
-QuestLogic.CompletedMainQuests = 0
 
 QuestLogic.MaxCompletedSideQuests = 30
 
 QuestLogic.CompletedSideQuestsIds = {}
-QuestLogic.CompletedMainQuestsIds = {}
+QuestLogic.CompletedMainQuestsNames = {}
 
 QuestLogic.ForceOpenPneumaticTube = false
 QuestLogic.MaxDifficulty = -1
@@ -183,10 +182,6 @@ function QuestLogic:SetCompletedSideQuest(value)
     self.CompletedSideQuests = value
 end
 
-function QuestLogic:SetCompletedMainQuest(value)
-    self.CompletedMainQuests = value
-end
-
 function QuestLogic:SetMaxCompletedSideQuests(value)
     self.MaxCompletedSideQuests = value
 end
@@ -212,13 +207,33 @@ function QuestLogic:LoadAvailableQuestBonuses(bonuses)
     self.AvailableQuestBonuses = bonuses
 end
 
-function QuestLogic:LoadCompletedQuests(MainQuestsIds, SideQuestsIds)
+function QuestLogic:LoadCompletedQuests(MainQuestsNames, SideQuestsIds)
     self.CompletedSideQuestsIds = SideQuestsIds
-    self.CompletedMainQuestsIds = MainQuestsIds
+    self.CompletedMainQuestsNames = MainQuestsNames
 end
 
 function QuestLogic:SetMaxDifficulty(Difficulty)
     self.MaxDifficulty = Difficulty
+end
+
+function QuestLogic:QuestHasTag(Quest, SearchedTag)
+    local hasTag = false
+    Utils.LoopGameplayTagContainer(Quest.Info.GameplayTags, function(tag, index)
+        if tag.TagName:ToString() == SearchedTag then
+            hasTag = true
+        end
+    end)
+    return hasTag
+end
+
+function QuestLogic:GetMainQuestName(Quest)
+    local name = ''
+    Utils.LoopGameplayTagContainer(Quest.Info.GameplayTags, function(tag, index)
+        if tag.TagName:ToString():match("^Quest.Specific.(.+)$") then
+            name = tag.TagName:ToString():match("^Quest.Specific.(.+)$")
+        end
+    end)
+    return name
 end
 
 function QuestLogic:LogQuestStarted()
@@ -236,22 +251,72 @@ function QuestLogic:LogQuestStarted()
     end)
 end
 
+QuestLogic.SAVE_PATH = "ue4ss/Mods/Randomizer/Saved/quests.lua"
 function QuestLogic:LogQuestRegistered()
     local pre,post = RegisterHook("/Script/CashCleanerSim.Quest:OnRegistered", function(_self)
         local quest = _self:get()
-        print(string.format("[MarketMod] Quest registered: %s", Utils.GuidToString(quest.QuestId)))
-        print(string.format("[MarketMod] Quest Name: %s", quest.Info.Name:ToString()))
-        print(string.format("[MarketMod] Quest Description: %s", quest.Info.Description:ToString()))
-
+        local staticTags = {}
         Utils.LoopGameplayTagContainer(quest.GameplayTags.StaticTags, function(tag, index)
-            print(string.format("[MarketMod] Static gameplay Tag: %s", tag.TagName:ToString()))
+            table.insert(staticTags, tag.TagName:ToString())
         end)
+
+        local gameplayTags = {}
         Utils.LoopGameplayTagContainer(quest.GameplayTags.GameplayTags, function(tag, index)
-            print(string.format("[MarketMod] Gameplay Tag: %s", tag.TagName:ToString()))
+             table.insert(gameplayTags, tag.TagName:ToString())
         end)
+
+        local infoTags = {}
         Utils.LoopGameplayTagContainer(quest.Info.GameplayTags, function(tag, index)
-            print(string.format("[MarketMod] Info Gameplay Tag: %s", tag.TagName:ToString()))
+             table.insert(infoTags, tag.TagName:ToString())
         end)
+        
+        local dMoney = {}
+        pcall(function()
+            for i = 1, #quest.Objectives do
+                local objective = quest.Objectives[i]
+                local amount = 0
+                if objective.DesiredMoneyCurrency and objective.DesiredMoneyCurrency ~= nil then
+                    if objective.DesiredMoneyValue and objective.DesiredMoneyValue ~= nil and objective.DesiredMoneyValue ~= 0 then
+                        amount = objective.DesiredMoneyValue
+                    end
+                    if objective.DesiredMoneyValueV2 and objective.DesiredMoneyValueV2 ~= nil then
+                        amount = objective.DesiredMoneyValueV2.Value
+                    end
+                    pcall(function() 
+                        if objective.DesiredMoneyCurrency.TagName and objective.DesiredMoneyCurrency.TagName ~= nil then
+                            dMoney[objective.DesiredMoneyCurrency.TagName:ToString()] = { Amount = amount, Rules = {} }
+                            if objective.ValidationRules and objective.ValidationRules ~= nil and type(#objective.ValidationRules) == "number" then
+                                for j = 1, #objective.ValidationRules do
+                                    local rule = objective.ValidationRules[j]
+                                    dMoney[objective.DesiredMoneyCurrency.TagName:ToString()].Rules[rule:ToString()] = true
+                                    j = j + 1
+                                end
+                            end
+                        end
+                    end)
+                end
+
+                i = i + 1
+            end
+        end)
+        local questInfo = {
+            Name = quest.Info.Name:ToString(),
+            Description = quest.Info.Description:ToString(),
+            Difficulty = quest.Info.Difficulty,
+            ReputationLevelRequirement = quest.Info.ReputationLevelRequirement,
+            DesiredMoney = dMoney,
+            StaticTags = staticTags,
+            GameplayTags = gameplayTags,
+            InfoTags = infoTags
+        }
+        local f, err = io.open(self.SAVE_PATH, "a")
+        if not f then
+            return false
+        end
+
+        f:write(Utils.Serialize(questInfo))
+        f:close()
+
     end)
     Utils.OnQuit(function()
         local functionName = "/Script/CashCleanerSim.Quest:OnRegistered"
@@ -291,7 +356,9 @@ function QuestLogic:InitQuestLimitations()
 
                         local readableQuestName = quest.Info.Name:ToString()
                         
-                        if readableQuestName == "The Light Test" or readableQuestName == "Hot Dry" or readableQuestName == "Clean Cut" then
+                        if self:QuestHasTag(quest, "Quest.Specific.Main.TheLightTest") or
+                           self:QuestHasTag(quest, "Quest.Specific.Side.HotDry") or
+                           self:QuestHasTag(quest, "Quest.Specific.Side.CleanCut")  then
                             if reward.SpawnRequests ~= nil then
                                 if #reward.SpawnRequests then
                                     local requests = reward.SpawnRequests
@@ -334,7 +401,7 @@ function QuestLogic:InitQuestLimitations()
             end
         end
 
-        if quest.Info.Name:ToString() == "Shop Till Drops" then
+        if self:QuestHasTag(quest, "Quest.Specific.Main.ShopTillItDrops") then
             local smartphoneSubSystem = FindFirstOf("BP_SmartphoneSubsystem_C")
             smartphoneSubSystem:MakeAllAppsAvailable()
 
@@ -460,10 +527,10 @@ function QuestLogic:OnQuestFinish()
         end
         
         if not canceled and not isSide then
-            if not self.CompletedMainQuestsIds[Utils.GuidToString(questInstance.QuestId)] then
-                self.CompletedMainQuestsIds[Utils.GuidToString(questInstance.QuestId)] = true
-                self.Reward:Award("MainQuest_" .. self.CompletedMainQuests)
-                self.CompletedMainQuests = self.CompletedMainQuests + 1
+            local mainQuestName = self:GetMainQuestName(questInstance)
+            if not self.CompletedMainQuestsNames[mainQuestName] then
+                self.CompletedMainQuestsNames[mainQuestName] = true
+                self.Reward:Award("MainQuest_" .. mainQuestName)
             end
         end
 

@@ -38,11 +38,10 @@ function Save:Default()
             CurrentUpgrades = self.QuestLogic.CurrentUpgrades,
             AvailableQuestBonuses = self.QuestLogic.AvailableQuestBonuses,
             CompletedSideQuests = self.QuestLogic.CompletedSideQuests,
-            CompletedMainQuests = self.QuestLogic.CompletedMainQuests,
 
             MaxCompletedSideQuests = self.QuestLogic.MaxCompletedSideQuests,
             CompletedSideQuestsIds = self.QuestLogic.CompletedSideQuestsIds,
-            CompletedMainQuestsIds = self.QuestLogic.CompletedMainQuestsIds,
+            CompletedMainQuestsNames = self.QuestLogic.CompletedMainQuestsNames,
             ForceOpenPneumaticTube = self.QuestLogic.ForceOpenPneumaticTube,
             MaxDifficulty = self.QuestLogic.MaxDifficulty
         },
@@ -80,9 +79,8 @@ function Save:LoadSave()
 
     if LoadedData.QuestLogic then
         self.QuestLogic:SetCompletedSideQuest(LoadedData.QuestLogic.CompletedSideQuests)
-        self.QuestLogic:SetCompletedMainQuest(LoadedData.QuestLogic.CompletedMainQuests)
         self.QuestLogic:SetMaxCompletedSideQuests(LoadedData.QuestLogic.MaxCompletedSideQuests)
-        self.QuestLogic:LoadCompletedQuests(LoadedData.QuestLogic.CompletedMainQuestsIds, LoadedData.QuestLogic.CompletedSideQuestsIds)
+        self.QuestLogic:LoadCompletedQuests(LoadedData.QuestLogic.CompletedMainQuestsNames, LoadedData.QuestLogic.CompletedSideQuestsIds)
         self.QuestLogic:LoadAvailableQuestBonuses(LoadedData.QuestLogic.AvailableQuestBonuses)
         self.QuestLogic:SetUpgrades(LoadedData.QuestLogic.CurrentUpgrades)
         self.QuestLogic:UpdateForceOpenTube(LoadedData.QuestLogic.ForceOpenPneumaticTube)
@@ -113,10 +111,9 @@ function Save:OnChange()
             CurrentUpgrades = self.QuestLogic.CurrentUpgrades,
             AvailableQuestBonuses = self.QuestLogic.AvailableQuestBonuses,
             CompletedSideQuests = self.QuestLogic.CompletedSideQuests,
-            CompletedMainQuests = self.QuestLogic.CompletedMainQuests,
             MaxCompletedSideQuests = self.QuestLogic.MaxCompletedSideQuests,
             CompletedSideQuestsIds = self.QuestLogic.CompletedSideQuestsIds,
-            CompletedMainQuestsIds = self.QuestLogic.CompletedMainQuestsIds,
+            CompletedMainQuestsNames = self.QuestLogic.CompletedMainQuestsNames,
             ForceOpenPneumaticTube = self.QuestLogic.ForceOpenPneumaticTube,
             MaxDifficulty = self.QuestLogic.MaxDifficulty
         },

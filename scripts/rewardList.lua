@@ -140,5 +140,7 @@ local RewardList = {
     [132] = "ReputationGain",
     [133] = "ReputationGain",
     [134] = "ReputationGain",
+    [135] = "ReputationGain",
+    [136] = "ReputationGain",
 }
 return RewardList
